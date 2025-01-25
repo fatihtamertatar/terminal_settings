@@ -1,0 +1,164 @@
+#!/bin/bash
+
+fbname(){
+	find . -iname "*$1*" 2>/dev/null | highlight $1
+}
+
+obname(){
+    files=`fbname $1`
+    for file in $files; do
+        echo File: $file
+        nohup code $file > /dev/null 2>&1 &
+        sleep 1
+    done
+
+    if [[ ! -n "$files" ]]; then
+    echo "No match with pattern $1"
+    fi
+}
+
+fbcontent(){
+	egrep -nrisI "$1" 2>/dev/null
+}
+
+filesizehumanreadable(){
+    ls -lah $1 | awk -F " " {'print $5'}
+}
+
+copygitfiles(){
+	if ["$#" -lt 3 ]; then
+		echo "Illegal number of parameters"
+		return
+	fi
+	
+	echo "From here: '$1'"
+	echo "To  there: '$2'"
+	echo ""
+	
+	for arg in "$@"; do
+		if [ $arg == $1] || [ $arg == $2 ]
+		then
+		    continue
+		else
+		    echo "File '$arg'"
+            cp $1/$arg $2/$arg
+        fi
+    done
+}
+
+command_not_found_handle(){
+    echo "bash: $1: command not found."
+    echo "Anything else?"
+}
+
+highlight(){
+    grep -i --color -E "$1|\$"
+}
+
+parsegitstatus() {
+    if [[ $(is_git_dir) -ne 0 ]]; then
+        GIT_CMD_OUTPUT="`git status -uno --porcelain`"
+        GIT_STAGED_FILE_COUNT=`"$GIT_CMD_OUTPUT" | grep -i "(^M.|^A.)" | wc -l`
+        GIT_MODIFIED_FILE_COUNT=`"$GIT_CMD_OUTPUT" | grep -i "^.M" | wc -l`
+        GIT_REMOVED_FILE_COUNT=`"$GIT_CMD_OUTPUT" | grep -i "^.D" | wc -l`
+
+        if [[ $GIT_STAGED_FILE_COUNT -ne 0 ]]; then
+            echo -e -n "${BPURPLE}S: $GIT_STAGED_FILE_COUNT${NO_COLOR} "
+        fi
+        if [[ $GIT_MODIFIED_FILE_COUNT -ne 0 ]]; then
+            echo -e -n "${BBLUE}M: $GIT_MODIFIED_FILE_COUNT${NO_COLOR} "
+        fi
+        if [[ $GIT_REMOVED_FILE_COUNT -ne 0 ]]; then
+            echo -e -n "${BRED}D: $GIT_REMOVED_FILE_COUNT${NO_COLOR} "
+        fi
+    fi
+}
+
+parsegituntracked() {
+    if [[ $(is_git_dir) -ne 0 ]]; then
+        val=`git status --porcelain -u | grep -i "^\?\?" | wc -l`
+        if [[ $val -ne 0 ]]; then
+            echo "${BIWHITE}U:$val${NO_COLOR}"
+        fi
+    fi
+}
+
+is_git_dir(){
+    inside_git_repo="$(git rev-parse --is-inside-work-tree 2>/dev/null)"
+
+    if [ "$inside_git_repo" ]; then
+        echo 1
+    else
+        echo 0
+    fi
+}
+
+parsegitbranch(){
+    if [[ $(is_git_dir) -ne 0 ]]; then
+        branch=`git branch | sed -e '/^[^*]/d'`
+        if [[ "$branch" == *"develop"* ]]; then
+            branch="${BIBLUE}$branch${NO_COLOR}"
+        elif [[ "$branch" == *"main"* ]]; then
+            branch="${BIRED}$branch${NO_COLOR}"
+        elif [[ "$branch" == *"master"* ]]; then
+            branch="${BIRED}$branch${NO_COLOR}"
+        elif [[ "$branch" == *"feature"* ]]; then
+            branch="${BICYAN}$branch${NO_COLOR}"
+        elif [[ "$branch" == *"dev/"* ]]; then
+            branch="${BIGREEN}$branch${NO_COLOR}"
+        elif [[ "$branch" == *"deliver/"* ]]; then
+            branch="${BGREEN}$branch${NO_COLOR}"
+        else
+            branch="${BPURPLE}$branch${NO_COLOR}"
+        fi
+        echo $branch
+    fi
+}
+
+move_trash(){
+    if [ -d "$TRASH_DIR" ]
+    then
+        :
+    else
+        echo "$TRASH_DIR does not exists."
+        echo "Creating.."
+        mkdir $TRASH_DIR
+        echo "Use 'trash' command to access your removed files."
+     fi
+     
+     for arg in "$@"; do
+        new_name=$arg.`date +%s`
+        echo \'$arg\' will move to trash with name \'$new_name\'
+        read -r -p "Are you sure? [y/N] " response
+        if [[ "$response" =~ ^([yY][eE][sS]|[yY])$ ]]
+        then
+            mv $arg $TRASH_DIR/$new_name
+        else
+            echo "aborted."
+        fi
+    done
+}
+
+move_archive(){
+    if [ -d "$ARCHIVE_DIR" ]
+    then
+        :
+    else
+        echo "$ARCHIVE_DIR does not exists."
+        echo "Creating.."
+        mkdir $ARCHIVE_DIR
+        echo "Use 'archive' command to access your removed files."
+     fi
+     
+     for arg in "$@"; do
+        new_name=$arg"."`date +%s`".bak"
+        echo \'$arg\' will be copied to archive with name \'$new_name\'
+        read -r -p "Are you sure? [y/N] " response
+        if [[ "$response" =~ ^([yY][eE][sS]|[yY])$ ]]
+        then
+            cp -R $arg $ARCHIVE_DIR/$new_name
+        else
+            echo "aborted."
+        fi
+    done
+}

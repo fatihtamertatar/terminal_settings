@@ -1,0 +1,40 @@
+#!/bin/bash
+
+#ALIASES
+alias cp='\cp -ip'
+alias echo='\echo -e' # OK
+alias egrep='\egrep --color=auto' # OK
+alias grep='egrep'
+
+alias ls="\ls -ct --color"
+alias l='ls -AhGF'
+alias ll='l -l'
+alias lll='ll -R'
+
+alias mkdir='\mkdir -pv'
+alias mv='\mv -i'
+alias rm='\rm -i'
+
+#---------------------------------------------------------#
+# TRASH BIN
+#---------------------------------------------------------#
+alias del='move_trash'
+alias nav.trash='cd $TRASH_DIR'
+
+#---------------------------------------------------------#
+# ARCHIVE
+#---------------------------------------------------------#
+alias archive='move_archive'
+alias nav.archive='cd $ARCHIVE_DIR'
+
+alias t.diskspace='du -hs .[a-zA-Z]* * | sort -h'
+alias t.explorer='\nautilus . &'
+alias t.returndir='cd $path_to_return'
+alias t.savedir='setenv $path_to_return `pwd`'
+alias t.update='gedit $SETTINGS_FOLDER/* && source $ALIASES_FILE'
+alias t.trash='cd $TRASH_DIR'
+alias git.dir='cd $HOME_DIR/GitHub'
+alias git.graph='git log --graph --decorate --oneline'
+alias git.hardreset='git rm --cached -r . && echo "" && git status'
+alias git.root='cd `git rev-parse --show-toplevel`'
+alias git.touched='git status --porcelain | cut -c4-'

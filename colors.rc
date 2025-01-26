@@ -2,6 +2,7 @@
 export BOLD="$(tput bold)"
 export CLEAR="$(tput sgr0)"
 
+
 # Reset
 NO_COLOR='\033[0m'       # Text Reset
 

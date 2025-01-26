@@ -75,12 +75,12 @@ is_git_dir(){
 
 parsegitstatus() {
     if [[ $(is_git_dir) -ne 0 ]]; then
-        GIT_CMD_OUTPUT="`git status -uno --porcelain`"
-        GIT_STAGED_FILE_COUNT=`$GIT_CMD_OUTPUT | \grep -i "(^M.|^A.)" | wc -l`
-        GIT_MODIFIED_FILE_COUNT=`"$GIT_CMD_OUTPUT" | \grep -i "^.M" | wc -l`
-        GIT_REMOVED_FILE_COUNT=`"$GIT_CMD_OUTPUT" | \grep -i "^.D" | wc -l`
+        GIT_CMD_OUTPUT="$(git status -uno --porcelain)"
+        GIT_STAGED_FILE_COUNT=$(echo "$GIT_CMD_OUTPUT" | grep -E "^(A|M)" | wc -l)
+        GIT_MODIFIED_FILE_COUNT=$(echo "$GIT_CMD_OUTPUT" | grep -E "^ M" | wc -l)
+        GIT_REMOVED_FILE_COUNT=$(echo "$GIT_CMD_OUTPUT" | grep -E "^D " | wc -l)
         if [[ $GIT_STAGED_FILE_COUNT -ne 0 ]]; then
-            echo -e -n "${BPURPLE}📦$GIT_STAGED_FILE_COUNT${NO_COLOR}"
+            echo -e -n "${BPURPLE}📦$GIT_STAGED_FILE_COUNT${NO_COLOR} "
         fi
         if [[ $GIT_MODIFIED_FILE_COUNT -ne 0 ]]; then
             if [[ $GIT_STAGED_FILE_COUNT -ne 0 ]]; then

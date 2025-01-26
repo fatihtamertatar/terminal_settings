@@ -2,30 +2,28 @@
 
 shell=`ps -p $$ | tail -1 | awk '{print $NF}'`
 if [ $shell == "bash" ]; then
-echo "good"
+    HOME_DIR="/home/`whoami`"
+    THIS_FOLDER="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+    TRASH_DIR=$HOME_DIR/.trashbin
+    ARCHIVE_DIR=$HOME_DIR/.archived
+
+    ALIASES_FILE=$THIS_FOLDER/aliases.rc
+    COLORS_FILE=$THIS_FOLDER/colors.rc
+    FUNCTIONS_FILE=$THIS_FOLDER/functions.rc
+
+    # SOURCE
+    source $COLORS_FILE
+    source $ALIASES_FILE
+    source $FUNCTIONS_FILE
+
+    # PROMPT
+    datepart='\[`date +"wk%V.%u, %H:%M"`\]'
+    namepart="\r\n${BIGREEN}\u ($datepart)${CLEAR}"
+    pathpart=":${BBLUE}\w${NO_COLOR}"
+    gitline='`creategitprompt`'
+
+    export PS1=$namepart$pathpart$gitline"\r\n\$ "
+else
+    echo "Non-bash shells are not supported."
 fi
-
-HOME_DIR="/home/`whoami`"
-SETTINGS_FOLDER=. #$HOME_DIR/.settings/terminal
-
-TRASH_DIR=$HOME_DIR/.trashbin
-ARCHIVE_DIR=$HOME_DIR/.archived
-
-ALIASES_FILE=$SETTINGS_FOLDER/aliases.rc
-COLORS_FILE=$SETTINGS_FOLDER/colors.rc
-FUNCTIONS_FILE=$SETTINGS_FOLDER/functions.rc
-
-# SOURCE
-source $COLORS_FILE
-source $ALIASES_FILE
-source $FUNCTIONS_FILE
-
-# PROMPT
-datepart='\[`date +"wk%V.%u, %H:%M"`\]'
-namepart="\r\n${BIGREEN}\u ($datepart)${CLEAR}"
-pathpart=":${BBLUE}\w${NO_COLOR}"
-gitbranch='`parsegitbranch`'
-gitstatus='`parsegitstatus`'
-gitline='`creategitprompt`'
-
-export PS1=$namepart$pathpart$gitline"\r\n\$ "

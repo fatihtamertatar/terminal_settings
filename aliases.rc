@@ -1,16 +1,16 @@
 #!/bin/bash
 
-#ALIASES
+#---------------------------------------------------------#
+# GENERIC
+#---------------------------------------------------------#
 alias cp='\cp -ip'
-alias echo='\echo -e' # OK
-alias egrep='\egrep --color=auto' # OK
+alias echo='\echo -e'
+alias egrep='\egrep --color=auto'
 alias grep='egrep'
-
 alias ls="\ls -ct --color"
 alias l='ls -AhGF'
 alias ll='l -l'
 alias lll='ll -R'
-
 alias mkdir='\mkdir -pv'
 alias mv='\mv -i'
 alias rm='\rm -i'
@@ -27,14 +27,33 @@ alias nav.trash='cd $TRASH_DIR'
 alias archive='move_archive'
 alias nav.archive='cd $ARCHIVE_DIR'
 
+#---------------------------------------------------------#
+# NAVIGATION
+#---------------------------------------------------------#
+alias nav.load='cd $path_to_return'
+alias nav.save='setenv $path_to_return `pwd`'
+
+#---------------------------------------------------------#
+# SEARCH
+#---------------------------------------------------------#
+alias fc="fbcontent"
+alias ff="fbname"
+alias of="obname"
+alias div='cut_with_delim_and_position'
+alias sl='grep -i'
+alias slc='grep -i --color=always'
+alias nt="grep -iv"
+
+
 alias t.diskspace='du -hs .[a-zA-Z]* * | sort -h'
 alias t.explorer='\nautilus . &'
-alias t.returndir='cd $path_to_return'
-alias t.savedir='setenv $path_to_return `pwd`'
+
 alias t.update='gedit $SETTINGS_FOLDER/* && source $ALIASES_FILE'
-alias t.trash='cd $TRASH_DIR'
+
 alias git.dir='cd $HOME_DIR/GitHub'
 alias git.graph='git log --graph --decorate --oneline'
 alias git.hardreset='git rm --cached -r . && echo "" && git status'
-alias git.root='cd `git rev-parse --show-toplevel`'
+
+alias git.root_dir="git rev-parse --show-toplevel"
+alias git.root='cd `git.root_dir`'
 alias git.touched='git status --porcelain | cut -c4-'

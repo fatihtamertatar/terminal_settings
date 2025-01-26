@@ -1,5 +1,9 @@
 #!/bin/bash
 
+command_not_found_handle(){
+    echo "bash: $1: command not found!"
+}
+
 fbname(){
 	find . -iname "*$1*" 2>/dev/null | highlight $1
 }
@@ -55,6 +59,20 @@ highlight(){
     grep -i --color -E "$1|\$"
 }
 
+#---------------------------------------------------------#
+# Git
+#---------------------------------------------------------#
+
+is_git_dir(){
+    inside_git_repo="$(git rev-parse --is-inside-work-tree 2>/dev/null)"
+
+    if [ "$inside_git_repo" ]; then
+        echo 1
+    else
+        echo 0
+    fi
+}
+
 parsegitstatus() {
     if [[ $(is_git_dir) -ne 0 ]]; then
         GIT_CMD_OUTPUT="`git status -uno --porcelain`"
@@ -63,13 +81,19 @@ parsegitstatus() {
         GIT_REMOVED_FILE_COUNT=`"$GIT_CMD_OUTPUT" | grep -i "^.D" | wc -l`
 
         if [[ $GIT_STAGED_FILE_COUNT -ne 0 ]]; then
-            echo -e -n "${BPURPLE}S: $GIT_STAGED_FILE_COUNT${NO_COLOR} "
+            echo -e -n "${BPURPLE}📦$GIT_STAGED_FILE_COUNT${NO_COLOR}"
         fi
         if [[ $GIT_MODIFIED_FILE_COUNT -ne 0 ]]; then
-            echo -e -n "${BBLUE}M: $GIT_MODIFIED_FILE_COUNT${NO_COLOR} "
+            if [[ $GIT_STAGED_FILE_COUNT -ne 0 ]]; then
+                echo -e -n " "
+            fi
+            echo -e -n "${BBLUE}📝$GIT_MODIFIED_FILE_COUNT${NO_COLOR}"
         fi
         if [[ $GIT_REMOVED_FILE_COUNT -ne 0 ]]; then
-            echo -e -n "${BRED}D: $GIT_REMOVED_FILE_COUNT${NO_COLOR} "
+            if [[ $GIT_MODIFIED_FILE_COUNT -ne 0 ]]; then
+                echo -e -n " "
+            fi
+            echo -e -n "${BRED}🗑️ $GIT_REMOVED_FILE_COUNT${NO_COLOR}"
         fi
     fi
 }
@@ -83,37 +107,39 @@ parsegituntracked() {
     fi
 }
 
-is_git_dir(){
-    inside_git_repo="$(git rev-parse --is-inside-work-tree 2>/dev/null)"
-
-    if [ "$inside_git_repo" ]; then
-        echo 1
-    else
-        echo 0
-    fi
-}
-
 parsegitbranch(){
     if [[ $(is_git_dir) -ne 0 ]]; then
-        branch=`git branch | sed -e '/^[^*]/d'`
+        branch=`git rev-parse --abbrev-ref HEAD`
         if [[ "$branch" == *"develop"* ]]; then
-            branch="${BIBLUE}$branch${NO_COLOR}"
+            color=${BIBLUE}
         elif [[ "$branch" == *"main"* ]]; then
-            branch="${BIRED}$branch${NO_COLOR}"
+            color=${BIRED}
         elif [[ "$branch" == *"master"* ]]; then
-            branch="${BIRED}$branch${NO_COLOR}"
+            color=${BIRED}
         elif [[ "$branch" == *"feature"* ]]; then
-            branch="${BICYAN}$branch${NO_COLOR}"
+            color=${BICYAN}
         elif [[ "$branch" == *"dev/"* ]]; then
-            branch="${BIGREEN}$branch${NO_COLOR}"
+            color=${BIGREEN}
         elif [[ "$branch" == *"deliver/"* ]]; then
-            branch="${BGREEN}$branch${NO_COLOR}"
+            color=${BGREEN} 
         else
-            branch="${BPURPLE}$branch${NO_COLOR}"
+            color=${BPURPLE}
         fi
-        echo $branch
+        echo ${color}$branch${NO_COLOR}
     fi
 }
+
+creategitprompt(){
+    o1=`parsegitbranch`
+    o2=`parsegitstatus`
+    if [[ $(is_git_dir) -ne 0 ]]; then
+        echo "\n📌"$o1" "$o2
+    fi
+}
+
+#---------------------------------------------------------#
+# Trash
+#---------------------------------------------------------#
 
 move_trash(){
     if [ -d "$TRASH_DIR" ]
@@ -138,6 +164,10 @@ move_trash(){
         fi
     done
 }
+
+#---------------------------------------------------------#
+# Archive
+#---------------------------------------------------------#
 
 move_archive(){
     if [ -d "$ARCHIVE_DIR" ]

@@ -15,14 +15,17 @@ ALIASES_FILE=$SETTINGS_FOLDER/aliases.rc
 COLORS_FILE=$SETTINGS_FOLDER/colors.rc
 FUNCTIONS_FILE=$SETTINGS_FOLDER/functions.rc
 
-#SOURCE
+# SOURCE
 source $COLORS_FILE
 source $ALIASES_FILE
 source $FUNCTIONS_FILE
 
-datepart='\[`date + "wk%V.%u, %H:%M`\]'
-namepart="\r\n${BOLD}\u ($datepart)${CLEAR}"
+# PROMPT
+datepart='\[`date +"wk%V.%u, %H:%M"`\]'
+namepart="\r\n${BIGREEN}\u ($datepart)${CLEAR}"
+pathpart=":${BBLUE}\w${NO_COLOR}"
+gitbranch='`parsegitbranch`'
 gitstatus='`parsegitstatus`'
-gitbranch='\[`parsegitbranch`\]'
+gitline='`creategitprompt`'
 
-echo $namepart$gitbranch$gitstatus
+export PS1=$namepart$pathpart$gitline"\r\n\$ "
